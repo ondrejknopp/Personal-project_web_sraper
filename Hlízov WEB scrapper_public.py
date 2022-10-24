@@ -19,20 +19,26 @@ def main():
     hlizov_soup = get_soup(Hlizov_WebPage)
     txt_soup = str(hlizov_soup.findAll(text=True))
     #print(hlizov_soup.prettify())
-    input_date =  "Vloženo: " + str(today)
+    today_date =  str(today)
+    #print(today_date)
+    soup_substring_prep= substring_after(txt_soup, "Oznámení ČEZ Distribuce - přerušení dodávky elektřiny")
+    input_date = soup_substring_prep[37:45]
     #print(input_date)
 
-    if "přerušení dodávky elektřiny" in txt_soup and input_date in txt_soup:
+
+    if "přerušení dodávky elektřiny" in txt_soup and today_date == input_date:
         print("Na stránkách obce oznámení o přerušení dodávky elektřiny!")
         # Call the message function
         mail()
 
-    elif "přerušení dodávky elektřiny" in txt_soup and input_date not in txt_soup:
+    elif "přerušení dodávky elektřiny" in txt_soup and today_date != input_date:
         print("Oznámení o přerušení dodávky elektřiny - neaktuální...")
 
     else:
         print('Nenašel jsem nic..')
 
+def substring_after(s, delim):
+    return s.partition(delim)[2]
 
 def mail():
     # initialize connection to our email server,
@@ -41,16 +47,17 @@ def mail():
     smtp.starttls()
 
     # Login with your email and password
-    smtp.login("", "")
+    smtp.login("your_email", "password")
 
     # Call the message function
     msg = message("ČEZ Alert!", "Na stránkách obce oznámení o přerušení dodávky elektřiny!",None, None)
 
-    to = [""] #receiving email
+    to = ["receiving_address"]
 
-    # Providing data to the sendmail function, input sending address:
-    smtp.sendmail(from_addr="", to_addrs=to, msg=msg.as_string())
+    # Provide some data to the sendmail function!
+    smtp.sendmail(from_addr="sending_address", to_addrs=to, msg=msg.as_string())
 
+    # Finally, don't forget to close the connection
     smtp.quit()
 
 def get_soup(adresa):
@@ -72,8 +79,7 @@ def message(subject="Notification",
     # Add text contents
     msg.attach(MIMEText(text))
 
-    # Check if we have anything
-    # given in the img parameter
+    # Check if we have anything given in the img parameter
     if img is not None:
 
         # Check whether we have the lists of images or not!
